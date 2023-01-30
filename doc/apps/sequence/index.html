@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="./style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <!--script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils_3d/control_utils_3d.js" crossorigin="anonymous"></script-->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <div class="main">
+        <div class="top-bar">
+            <a href="../../">Home</a>
+            <div class="title">Sequence</div>
+        </div>
+        <div class="app-content">
+            <div class="display">
+                <video controls autoplay id="input_video"></video>
+                <canvas id="output_canvas" width="800px" height="600px"></canvas>
+                <div class="loading" id="loading">
+                    <!--div class="loading-text">Loading...</div-->
+                    <!--div class="loading-spinner"></div-->
+                    <div class="lds-dual-ring"></div>
+                </div>
+            </div>
+            <div class="app-sidebar">
+                <div id="code-editor" contenteditable="true" spellcheck="false"></div>
+                <a href="https://mediapipe.dev/images/mobile/pose_tracking_full_body_landmarks.png" target="_blank">ref_points</a>
+                <!-- save name edit -->
+                <div class="save-name">
+                    <input type="text" id="save-name" placeholder="save name">
+                    <button id="save-button">Save</button>
+                    <button id="load-button">Load</button>
+                </div>
+                <div id="savings">a</div>
+            </div>
+        </div>
+        <div class="bottom-bar">
+            ciao
+        </div>
+    </div>
+
+    <script src="./src/renderer.js" type="module"></script>
+
+</body>
+</html>

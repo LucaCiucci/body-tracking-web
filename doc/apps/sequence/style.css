@@ -1,0 +1,190 @@
+
+
+body {
+    background: rgb(30, 30, 30);
+    color: rgb(200, 200, 200);
+
+    width: 100wh;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+body a {
+    color: cornflowerblue;
+    text-decoration: none;
+}
+
+body a:hover {
+    text-decoration: underline;
+}
+
+.main {
+    display: flex;
+    flex-direction: column;
+    /*flex-grow: 1;
+    flex-shrink: 1;*/
+    height: 100%;
+    width: 100%;
+    /*align-items: stretch;*/
+    overflow: hidden;
+}
+
+.top-bar {
+    /*background: rgb(50, 50, 50);*/
+    border-bottom: 1px solid gray;
+    display: flex;
+    flex-direction: row;
+    font-size: 125%;
+    padding-left: 5em;
+    padding-right: 5em; 
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+}
+
+.top-bar a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.top-bar a:hover {
+    text-decoration: underline;
+}
+
+.top-bar .title {
+    text-align: center;
+    flex-grow: 1;
+}
+
+.bottom-bar {
+    border-top: 1px solid gray;
+}
+
+.app-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+}
+
+.app-content .display {
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    overflow: hidden;
+    position: relative;
+}
+
+.app-content .app-sidebar {
+    /* default 25% width */
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 25%;
+
+    border-left: 1px solid gray;
+
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.display #input_video {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    object-fit: contain;
+}
+
+.display #output_canvas {
+    top: 0;
+    left: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.app-content .loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 200%;
+}
+
+.app-content .loading-text {
+    font-size: 150%;
+    color: white;
+
+    /* text outline black */
+    text-shadow: -1px -1px 0 #000,  
+                 1px -1px 0 #000,
+                 -1px 1px 0 #000,
+                 1px 1px 0 #000;
+}
+
+/*
+ from https://loading.io/css/
+*/
+.lds-dual-ring {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}
+
+.lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 6px solid #fff;
+    border-color: #fff transparent #fff transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#code-editor {
+    height: 20em;
+    background: rgb(20, 20, 20);
+    border-bottom: 1px solid gray;
+    border-top: 1px solid gray;
+
+    overflow: auto;
+    padding: 0.25em;
+
+    font-family: monospace;
+}
+
+.save-name {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5em;
+}
+
+.save-name #save-name {
+    flex-grow: 1;
+}
+
+#savings {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    height: 5em;
+    padding: 0.25em;
+    border-bottom: 1px solid gray;
+    border-top: 1px solid gray;
+}
+
+
