@@ -1,0 +1,43 @@
+
+.home-app {
+}
+
+.home-app h1 {
+    text-align: center;
+    color: cornflowerblue;
+    font-size: 250%;
+}
+
+.home-app #modes-container {
+    max-width: 1200px;
+    max-width: 600px;
+    margin: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+}
+
+.home-app .mode {
+    display: block;
+    width: 10em;
+    padding: 0.5em;
+    border-radius: 0.5em;
+    background-color: rgb(25, 25, 25);
+    border: 1px solid rgb(50, 50, 50);
+    color: inherit;
+    text-decoration: none;
+}
+
+.home-app .mode:hover {
+    background-color: rgb(35, 35, 35);
+}
+
+.home-app .mode>img {
+    width: 100%;
+    aspect-ratio: 1/1;
+}
+
+.home-app .mode>.title {
+    font-size: 150%;
+    text-align: center;
+}
