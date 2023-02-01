@@ -1,4 +1,7 @@
 {
-    "svg.preview.background": "dark-transparent",
-    "cSpell.language": "en,it"
+    "liveServer.settings.root": "/build",
+    "cSpell.words": [
+        "dullscript",
+        "mediapipe"
+    ]
 }

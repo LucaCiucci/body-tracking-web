@@ -1,15 +1,14 @@
-body {
-    background-color: rgb(30, 30, 30);
-    color: rgb(200, 200, 200);
+
+.home-app {
 }
 
-h1 {
+.home-app h1 {
     text-align: center;
     color: cornflowerblue;
     font-size: 250%;
 }
 
-#modes-container {
+.home-app #modes-container {
     max-width: 1200px;
     max-width: 600px;
     margin: auto;
@@ -18,7 +17,7 @@ h1 {
     gap: 1em;
 }
 
-.mode {
+.home-app .mode {
     display: block;
     width: 10em;
     padding: 0.5em;
@@ -29,16 +28,16 @@ h1 {
     text-decoration: none;
 }
 
-.mode:hover {
+.home-app .mode:hover {
     background-color: rgb(35, 35, 35);
 }
 
-.mode>img {
+.home-app .mode>img {
     width: 100%;
     aspect-ratio: 1/1;
 }
 
-.mode>.title {
+.home-app .mode>.title {
     font-size: 150%;
     text-align: center;
 }
