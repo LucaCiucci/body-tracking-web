@@ -7,7 +7,7 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import { Home } from './apps/home';
-import { Sequence } from './apps/sequence';
+import { App as SequenceApp } from './apps/sequence';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -17,7 +17,7 @@ root.render(
     <Router>
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path='/apps/sequence/' element={<Sequence />} />
+        <Route path='/apps/sequence/' element={<SequenceApp />} />
       </Routes>
     </Router>
   </React.StrictMode>

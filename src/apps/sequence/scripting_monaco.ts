@@ -5,7 +5,7 @@ import monaco_import from "monaco-editor/esm/vs/editor/editor.api"
 
 import { POSE_LANDMARKS, POSE_LANDMARKS_LEFT, POSE_LANDMARKS_RIGHT } from '@mediapipe/pose';
 
-export const EXAMPLE_CODE = `// ciao a tutti
+export const EXAMPLE_CODE_OLD = `// ciao a tutti
 # definiamo le posizioni dei punti di riferimento
 def braccio_destro [RIGHT_WRIST-RIGHT_ELBOW, RIGHT_ELBOW-RIGHT_SHOULDER]
 def braccio_sinistro [LEFT_WRIST-LEFT_ELBOW, LEFT_ELBOW-LEFT_SHOULDER]
@@ -26,6 +26,40 @@ repeat 3 times counter "serie"
     show "Riposo"
     countdown 30 seconds
 `;
+
+// This is written in javascript
+export const EXAMPLE_CODE = `// ciao a tutti
+// definiamo le posizioni dei punti di riferimento
+const braccio_destro = [[RIGHT_WRIST, RIGHT_ELBOW], [RIGHT_ELBOW, RIGHT_SHOULDER]]
+const braccio_sinistro = [[LEFT_WRIST, LEFT_ELBOW], [LEFT_ELBOW, LEFT_SHOULDER]]
+
+/**
+ * @param {number} N numero di ripetizioni
+ */
+async function esercizio_braccia(N) {
+    add_label("ripetizione", "ripetizione", "red");
+    for (let r = 0; r < N; r++) {
+        set_label("ripetizione", "ripetizione " + (r + 1) + "/" + N);
+        high(braccio_destro);
+        await pause(1, "second");
+        low(braccio_destro);
+        high(braccio_sinistro);
+        await pause(1, "second");
+        low(braccio_sinistro);
+    }
+    remove_label("ripetizione");
+}
+
+add_label("serie", "serie", "green");
+await countdown(3, "inizio tra");
+for (let s = 0; s < 3; s++) {
+    set_label("serie", "serie " + (s + 1) + "/3");
+    await esercizio_braccia(5);
+    await countdown(5, "Riposo");
+}
+remove_label("serie");
+`;
+
 
 const BASIC_KEYWORDS = [
     "def", "routine", "repeat", "pause", "high", "low", "show", "countdown",
@@ -52,7 +86,6 @@ const KEYWORDS = (() => {
 // and https://stackblitz.com/edit/vue-cli-monaco-editor?file=src%2Fcustom-lang-monarch.js
 export function configure_monaco_editor_language(editor: MonacoEditor.IStandaloneCodeEditor, monaco: typeof monaco_import) {
     monaco.languages.register({ id: 'mylang' });
-    console.log(KEYWORDS);
     monaco.languages.setMonarchTokensProvider('mylang', {
         keywords: KEYWORDS,
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,

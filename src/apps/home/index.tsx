@@ -4,6 +4,8 @@ import "./Home.css"
 import bike_logo from "../bicycle_posture_analyzer/logo.svg";
 import sequence_logo from "../sequence/logo.svg";
 
+import { Link } from "react-router-dom"
+
 export function Home(): JSX.Element {
     return (
     <div className="home-app">
@@ -12,18 +14,18 @@ export function Home(): JSX.Element {
         </h1>
 
         <div id="modes-container">
-            <a className="mode" href="./apps/bicycle_posture_analyzer/">
+            <Link className="mode" to="/apps/bicycle_posture_analyzer/">
                 <img src={bike_logo} alt="bicycle" />
                 <div className="title">
                     Bicycle angles<br/> (old)
                 </div>
-            </a>
-            <a className="mode" href="./apps/sequence/">
+            </Link>
+            <Link className="mode" to="/apps/sequence/">
                 <img src={sequence_logo} alt="sequence" />
                 <div className="title">
                     Sequence<br />
                 </div>
-            </a>
+            </Link>
         </div>
     </div>
     );
