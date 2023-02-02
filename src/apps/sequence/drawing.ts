@@ -1,5 +1,5 @@
 
-import { Results as PoseResults, Pose } from '@mediapipe/pose';
+import { Results as PoseResults } from '@mediapipe/pose';
 import { NormalizedLandmarkList } from '@mediapipe/drawing_utils';
 
 export var draw_data: {
@@ -76,7 +76,6 @@ export function draw(canvasElement: HTMLCanvasElement, videoElement: HTMLVideoEl
         ctx.lineWidth = 1;
     }
 
-    let ve = videoElement;
     const video_aspect = videoElement.videoHeight / videoElement.videoWidth;
     const canvas_aspect = canvas.height / canvas.width;
     function video_to_canvas_coordinates(p: [number, number]) {

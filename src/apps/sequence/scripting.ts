@@ -43,7 +43,8 @@ export function compile(code: string, language: Language): Function {
     console.warn("Compiling code: " + jsCode);
 
     // see http://jslint.fantasy.codes/the-function-constructor-is-eval for the warning
-    let compiledFunction = new Function(jsCode);
+    /*eslint no-new-func: "off"*/
+    let compiledFunction = new Function("a", jsCode);
 
     return compiledFunction;
 }
