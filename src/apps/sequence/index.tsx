@@ -40,7 +40,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import { compile, Language, runner, Script } from './scripting';
 import { draw, draw_data, set_x_tmp_inverted, x_tmp_inverted } from './drawing';
 
-const TMP_OK = false;
+const TMP_OK = true;
 
 type SimplifiedFacingMode = "user" | "environment";
 

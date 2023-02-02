@@ -39,7 +39,7 @@ jobs:
       - name: build app
         run: npm run build
       - name: copy output
-        run: cp -r ./build ./doc_build/app
+        run: sudo cp -r ./build ./doc_build/app
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
