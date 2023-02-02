@@ -13,6 +13,9 @@ export class RawStatement {
     }
 }
 
+function tmp_unused(..._args: any[]) {
+}
+
 /**
  * this function takes the lines and produces a list of statements.
  * 
@@ -35,7 +38,7 @@ export function consume_lines(lines: string[], start_index: number, indent: numb
         const trimmed_line = line.trim();
 
         // empty line
-        if (trimmed_line.length == 0)
+        if (trimmed_line.length === 0)
             continue;
 
         // comment
@@ -54,7 +57,8 @@ export function consume_lines(lines: string[], start_index: number, indent: numb
 
         let statement = new RawStatement(trimmed_line)
 
-        const [sub_statements, sub_last_used, next_line] = consume_lines(lines, i + 1, line_indent + 4);
+        const [sub_statements, sub_last_used, _next_line] = consume_lines(lines, i + 1, line_indent + 4);
+        tmp_unused(_next_line);
         if (sub_statements.length > 0) {
             statement.body = sub_statements;
             i = sub_last_used;

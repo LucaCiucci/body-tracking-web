@@ -27,11 +27,12 @@ import { NormalizedLandmarkList } from '@mediapipe/drawing_utils';
 import Checkbox from '@mui/material/Checkbox';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+//import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+//import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 
@@ -205,6 +206,7 @@ function Sidebar(props: {
 }): JSX.Element {
 
     const [speed, setSpeed] = React.useState(1);
+    tmp_unused(setSpeed);
 
     return (
         <Split className="sidebar" gutterSize={5} minSize={[100, 100]} direction="vertical">
@@ -533,6 +535,11 @@ namespace local_data {
     }
 }
 
+function tmp_unused(..._args: any[]) {
+}
+
+tmp_unused(local_data.KEY);
+
 export function App(props: {
 }): JSX.Element {
 
@@ -603,7 +610,7 @@ export function App(props: {
     const [examplesDlgOpen, setExamplesDlgOpen] = React.useState(false);
 
     // stop acquisition when component unmounts
-    React.useEffect(() => {
+    useEffect(() => {
         return () => {
             //console.warn("unmounting");
             //acquisition.stopAcquisition();
