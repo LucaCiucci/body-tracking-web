@@ -33,15 +33,17 @@ jobs:
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
-          destination: ./_site
+          destination: ./doc_build
       - name: install modules
         run: npm install
       - name: build app
         run: npm run build
       - name: copy output
-        run: cp -r ./build ./_site/app
+        run: cp -r ./build ./doc_build/app
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./doc_build
 
   # Deployment job
   deploy:
