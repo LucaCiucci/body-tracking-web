@@ -5,6 +5,10 @@ import { POSE_LANDMARKS, POSE_LANDMARKS_LEFT, POSE_LANDMARKS_RIGHT } from '@medi
 
 import * as drawing from './drawing';
 
+import { parse_to_js } from './dullscript';
+
+import { beep as window_beep } from '../../beep';
+
 export type Language = 'javascript' | 'typescript' | 'dullscript';
 
 export interface Script {
@@ -19,17 +23,18 @@ export interface Script {
  * @returns A function that can be called to execute the code.
  */
 export function compile(code: string, language: Language): Function {
+
+    const wrap = (code: string) => `return (async () => { ${code} })();`;
+
     let jsCode = (() => {
         switch (language) {
             case 'javascript':
-                const jsCode = `return (async () => { ${code} })();`;
-                return jsCode;
+                return wrap(code);
             case 'typescript':
                 throw new Error("Typescript is not implemented yet");
                 //return ts.transpile(code);
             case 'dullscript':
-                throw new Error("Dullscript is not implemented yet");
-                //return code;
+                return wrap(parse_to_js(code));
             default:
                 throw new Error("Unknown language: " + language);
         }
@@ -47,7 +52,7 @@ export namespace runner {
     var _abort: boolean = false;
     var _pause: boolean = false;
     var _speed_: number = 1;
-    /*export */var iter_interval_ms = 1000 / 2;
+    /*export */var iter_interval_ms = 1000 / 5;
     var canvas_updater = () => {};
 
     export function set_canvas_updater(func: () => void) {
@@ -218,6 +223,10 @@ export namespace runner {
             remove_label(name);
         };
         global["countdown"] = countdown;
+        const beep = (duration: number = 0.3, frequency: number = 432) => {
+            window_beep(duration, frequency);
+        }
+        global["beep"] = beep;
     }
 
     /**
@@ -279,7 +288,7 @@ export namespace runner {
     async function _impl_pause(seconds: number): Promise<void> {
 
         let to_wait_ms = seconds * 1000;
-        console.log("Waiting for " + to_wait_ms + " ms ", _speed_);
+        //console.log("Waiting for " + to_wait_ms + " ms ", _speed_);
 
         const start_time = Date.now();
 

@@ -30,6 +30,10 @@ import Box from '@mui/material/Box';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemButton from '@mui/material/ListItemButton';
 
 
 import { compile, Language, runner, Script } from './scripting';
@@ -39,8 +43,31 @@ const TMP_OK = false;
 
 type SimplifiedFacingMode = "user" | "environment";
 
-var current_program_code = "";
-var current_program_language: Language = "javascript";
+var current_program_code = `# See https://mediapipe.dev/images/mobile/pose_tracking_full_body_landmarks.png
+# for the list of joints (note that here they are written in uppercase).
+def braccio_destro [[RIGHT_WRIST, RIGHT_ELBOW], [RIGHT_ELBOW, RIGHT_SHOULDER]]
+def braccio_sinistro [[LEFT_WRIST, LEFT_ELBOW], [LEFT_ELBOW, LEFT_SHOULDER]]
+
+routine esercizio_braccia N
+    add_label "ripetizione" "red"
+    repeat N times counter r
+        set_label "ripetizione" ("ripetizione " + (r + 1) + "/" + N)
+        high braccio_destro
+        pause 1 "second"
+        low braccio_destro
+        high braccio_sinistro
+        pause 1 "second"
+        low braccio_sinistro
+    remove_label "ripetizione"
+
+add_label "serie" "green"
+countdown 3 "inizio tra"
+repeat 3 times counter s
+    set_label "serie" ("serie " + (s + 1) + "/3")
+    execute esercizio_braccia 5
+    countdown 5 "Riposo"
+remove_label "serie"`;
+var current_program_language: Language = "dullscript";
 
 const darkTheme = createTheme({
     palette: {
@@ -98,7 +125,6 @@ function Display(props:{
     inverted: boolean
 }): JSX.Element {
 
-    console.log("Display inverted", props.inverted);
     if (props.canvasElement && props.videoElement) {
         if (props.inverted) {
             props.videoElement.style.transform = "scaleX(-1)";
@@ -173,14 +199,12 @@ function Sidebar(props: {
     setInverted: (inverted: boolean) => void
     openExamplesDlg: () => void;
     saveProgram: () => void;
+    onLoad: (setCode: (code: string) => void) => void;
+    language: Language;
+    setLanguage: (language: Language) => void;
 }): JSX.Element {
 
     const [speed, setSpeed] = React.useState(1);
-    const [language, _setLanguage] = React.useState<Language>("javascript");
-    const setLanguage = (language: Language) => {
-        current_program_language = language;
-        _setLanguage(language);
-    }
 
     return (
         <Split className="sidebar" gutterSize={5} minSize={[100, 100]} direction="vertical">
@@ -193,7 +217,7 @@ function Sidebar(props: {
                 }}>
                     <Monaco
                         height="98%"
-                        language={language}
+                        language={props.language}
                         theme="vs-dark"
                         value={current_program_code}
                         options={{
@@ -206,11 +230,14 @@ function Sidebar(props: {
                         }}
                         onMount={(editor, monaco) => {
                             configure_monaco_editor_language(editor, monaco);
-                            (async () => {
-                                let response = await fetch(process.env.PUBLIC_URL + "/sequences/examples/full_example.js");
+                            props.onLoad((code: string) => {
+                                editor.setValue(code);
+                            });
+                            /*(async () => {
+                                let response = await fetch(default_program_path);
                                 current_program_code = await response.text();
                                 editor.setValue(current_program_code);
-                            })()
+                            })()*/
                         }}
                         className="monaco-editor"
                     />
@@ -227,9 +254,9 @@ function Sidebar(props: {
                         <Select
                             labelId="editor-language-select-label"
                             id="editor-language-select"
-                            value={language}
+                            value={props.language}
                             onChange={(event) => {
-                                setLanguage(event.target.value as Language);
+                                props.setLanguage(event.target.value as Language);
                             }}
                         >
                             <MenuItem value={"javascript"}>JavaScript</MenuItem>
@@ -242,7 +269,7 @@ function Sidebar(props: {
             <div>
                 <ExecutionControls onMount={(setCode) => {
                 }} onPlay={async () => {
-                    const program = compile(current_program_code, "javascript");
+                    const program = compile(current_program_code, current_program_language);
                     if (program) {
                         if (runner.isRunning()) {
                             runner.tellAbort();
@@ -260,7 +287,6 @@ function Sidebar(props: {
                                 }
                             });
                         }
-                        console.log("Program launched");
                     }
                 }} onPause={() => {
                     runner.setProgramPaused(true);
@@ -380,7 +406,6 @@ namespace acquisition {
         let tellStarted = () => {
             if (!started) {
                 started = true;
-                console.log("started, setting loading to false...");
                 setLoading(false);
             }
         };
@@ -415,6 +440,15 @@ namespace acquisition {
         if (TMP_OK) {
             await _camera.start();
         }
+    }
+
+    export async function stopAcquisition() {
+        if (_camera) {
+            await _camera.stop();
+            _camera = null;
+        }
+        _canvasElement = null;
+        _videoElement = null;
     }
 
     export async function update_canvas() {
@@ -499,14 +533,17 @@ namespace local_data {
     }
 }
 
-export function App(): JSX.Element {
+export function App(props: {
+}): JSX.Element {
 
     const [loading, setLoading] = React.useState(true);
-    console.log("loading: " + loading);
     const set_loading = (loading: boolean) => {
-        console.log("setting loading to " + loading);
         setLoading(loading);
     };
+    interface SetCodeFunction {
+        setCode: (code: string) => void;
+    }
+    const [set_code_f, set_set_code_f] = React.useState<SetCodeFunction | null>(null);
 
     // !!!
     const [inverted, _setInverted] = React.useState(local_storage_settings.settings().inverted);
@@ -533,8 +570,6 @@ export function App(): JSX.Element {
     if (!acquisition.videoElement() || !acquisition.canvasElement()) {
         acquisition.set_videoElement(createInputVideoElement());
         acquisition.set_canvasElement(createOutputCanvasElement());
-        console.log(acquisition.videoElement());
-        console.log(acquisition.canvasElement());
         acquisition.startAcquisition(set_loading, facingMode);
     }
 
@@ -552,13 +587,33 @@ export function App(): JSX.Element {
         }
         return undefined;
     })();
+    const [language, _setLanguage] = React.useState<Language>(current_program_language);
+    const setLanguage = (language: Language) => {
+        current_program_language = language;
+        _setLanguage(language);
+    }
+    const set_code = (code: string, language: Language) => {
+        if (set_code_f) {
+            current_program_code = code;
+            setLanguage(language);
+            set_code_f.setCode(code);
+        }
+    };
 
     const [examplesDlgOpen, setExamplesDlgOpen] = React.useState(false);
+
+    // stop acquisition when component unmounts
+    React.useEffect(() => {
+        return () => {
+            //console.warn("unmounting");
+            //acquisition.stopAcquisition();
+        }
+    }, []);
 
     return (
         <ThemeProvider theme={darkTheme}>
         <Stack height="100%" className="sequence-app">
-            <Header title="Sequence" root="../../"/>
+            <Header title="Sequence" />
             <Split className="main-content" gutterSize={5} minSize={[300, 300]} onDrag={() => {
                 acquisition.update_canvas();
             }}>
@@ -575,6 +630,11 @@ export function App(): JSX.Element {
                     saveProgram={() => {
                         alert("SAVE PROGRAM");
                     }}
+                    onLoad={(_setCode) => {
+                        set_set_code_f({setCode: _setCode});
+                    }}
+                    language={language}
+                    setLanguage={setLanguage}
                 />
             </Split>
             <Bottom onCameraFacingModeChange={(mode) => {
@@ -608,6 +668,14 @@ export function App(): JSX.Element {
                 backgroundColor: "rgb(30,30,30)",
             }}>
                 <div className="modal-title">Examples</div>
+                <ExamplesList openExample={(fileName, language) => {
+                    let url = process.env.PUBLIC_URL + "/sequences/examples/" + fileName;
+                    fetch(url).then((response) => {
+                        return response.text();
+                    }).then((text) => {
+                        set_code(text, language);
+                    });
+                }} />
             </Box>
         </Modal>
         <CssBaseline />
@@ -616,3 +684,29 @@ export function App(): JSX.Element {
 }
 
 const BUG_MESSAGE = "Due to an internal bug, page have to be reloaded to change this parameter, sorry for the inconvenience.";
+
+function ExamplesList(props:{
+    openExample: (fileName: string, language: Language) => void;
+}): JSX.Element {
+
+    const examples: { name: string, file: string, language: Language }[] = [
+        { name: "elaborated example (DS)", file: "full_example.ds", language: "dullscript" },
+        { name: "elaborated example (JS)", file: "full_example.js", language: "javascript" },
+    ];
+
+    return (
+        <List sx={{
+            width: "100%",
+        }}>
+            {
+                examples.map((example) => {
+                    return (
+                        <ListItemButton key={example.name} onClick={() => props.openExample(example.file, example.language)}>
+                            <ListItemText primary={example.name} />
+                        </ListItemButton>
+                    );
+                })
+            }
+        </List>
+    );
+}
