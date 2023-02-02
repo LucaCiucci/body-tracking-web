@@ -1,14 +1,15 @@
 
 import "./index.css"
 
+import { Link } from "react-router-dom"
+
 export function Header(props: {
     title: string;
-    root: string;
 }): JSX.Element {
     return (
         <div className="app-header">
             <div className="links">
-                <a href={props.root} className="link">Home</a>
+                <Link to="/" className="link">Home</Link>
             </div>
             <div className="title">{props.title}</div>
         </div>

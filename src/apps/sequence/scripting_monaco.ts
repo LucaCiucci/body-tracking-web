@@ -62,9 +62,7 @@ remove_label("serie");
 
 
 const BASIC_KEYWORDS = [
-    "def", "routine", "repeat", "pause", "high", "low", "show", "countdown",
-    "seconds", "milliseconds", "times",
-    "integer", "string"
+    "def", "routine", "call", "do", "execute", "run", "repeat", "times", "counter"
 ];
 
 const KEYWORDS = (() => {
@@ -85,8 +83,8 @@ const KEYWORDS = (() => {
 // See https://stackoverflow.com/questions/71563507/how-to-load-custom-language-in-monaco-using-vuejs-webpack
 // and https://stackblitz.com/edit/vue-cli-monaco-editor?file=src%2Fcustom-lang-monarch.js
 export function configure_monaco_editor_language(editor: MonacoEditor.IStandaloneCodeEditor, monaco: typeof monaco_import) {
-    monaco.languages.register({ id: 'mylang' });
-    monaco.languages.setMonarchTokensProvider('mylang', {
+    monaco.languages.register({ id: 'dullscript' });
+    monaco.languages.setMonarchTokensProvider('dullscript', {
         keywords: KEYWORDS,
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
         tokenizer: {
@@ -127,7 +125,7 @@ export function configure_monaco_editor_language(editor: MonacoEditor.IStandalon
     //console.log(monaco.languages.getLanguages());
 
     for (let lang of monaco.languages.getLanguages()) {
-        if (lang.id == "javascript") {
+        if (lang.id === "javascript") {
             console.log("Found javascript");
             console.log((lang as any).loader());
         }

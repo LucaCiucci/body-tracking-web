@@ -4,7 +4,12 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 
 //import { NavLink } from "react-router-dom";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  //BrowserRouter as Router,
+  HashRouter as Router,
+  Routes,
+  Route
+} from 'react-router-dom';
 
 import { Home } from './apps/home';
 import { App as SequenceApp } from './apps/sequence';
