@@ -14,12 +14,13 @@ export function Home(): JSX.Element {
         </h1>
 
         <div id="modes-container">
-            <Link className="mode" to="/apps/bicycle_posture_analyzer/">
+            {/*<Link className="mode" to="/apps/bicycle_posture_analyzer/">*/}
+            <a className="mode" href="https://lucaciucci.github.io/apps/bicycle_posture_analyzer/">
                 <img src={bike_logo} alt="bicycle" />
                 <div className="title">
                     Bicycle angles<br/> (old)
                 </div>
-            </Link>
+            </a>
             <Link className="mode" to="/apps/sequence/">
                 <img src={sequence_logo} alt="sequence" />
                 <div className="title">

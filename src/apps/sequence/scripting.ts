@@ -9,7 +9,32 @@ import { parse_to_js } from './dullscript';
 
 import { beep as window_beep } from '../../beep';
 
-export type Language = 'javascript' | 'typescript' | 'dullscript';
+export type Language = 'dullscript' | 'javascript' | 'typescript';
+
+export function string_to_language(str: string): Language {
+    if (str === 'dullscript') { return 'dullscript'; }
+    if (str === 'javascript') { return 'javascript'; }
+    if (str === 'typescript') { return 'typescript'; }
+    return 'dullscript';
+}
+
+export function language_to_extension(language: Language): string {
+    switch (language) {
+        case 'dullscript': return 'ds';
+        case 'javascript': return 'js';
+        case 'typescript': return 'ts';
+        default: return 'ds';
+    }
+}
+
+export function extension_to_language(extension: string): Language {
+    switch (extension) {
+        case 'ds': return 'dullscript';
+        case 'js': return 'javascript';
+        case 'ts': return 'typescript';
+        default: return 'dullscript';
+    }
+}
 
 export interface Script {
     code: string;
@@ -224,7 +249,7 @@ export namespace runner {
             remove_label(name);
         };
         global["countdown"] = countdown;
-        const beep = (duration: number = 0.3, frequency: number = 432) => {
+        const beep = (duration: number = 0.3, frequency: number = 432 * 2) => {
             window_beep(duration, frequency);
         }
         global["beep"] = beep;

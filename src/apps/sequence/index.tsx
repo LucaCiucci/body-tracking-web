@@ -37,38 +37,47 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 
 
-import { compile, Language, runner, Script } from './scripting';
+import { compile, extension_to_language, Language, language_to_extension, runner } from './scripting';
 import { draw, draw_data, set_x_tmp_inverted, x_tmp_inverted } from './drawing';
+import { local_data } from './data';
+import { SimplifiedFacingMode } from './types';
 
-const TMP_OK = false;
+const TMP_OK = true;
 
-type SimplifiedFacingMode = "user" | "environment";
-
-var current_program_code = `# See https://mediapipe.dev/images/mobile/pose_tracking_full_body_landmarks.png
-# for the list of joints (note that here they are written in uppercase).
-def braccio_destro [[RIGHT_WRIST, RIGHT_ELBOW], [RIGHT_ELBOW, RIGHT_SHOULDER]]
-def braccio_sinistro [[LEFT_WRIST, LEFT_ELBOW], [LEFT_ELBOW, LEFT_SHOULDER]]
-
-routine esercizio_braccia N
-    add_label "ripetizione" "red"
-    repeat N times counter r
-        set_label "ripetizione" ("ripetizione " + (r + 1) + "/" + N)
-        high braccio_destro
-        pause 1 "second"
-        low braccio_destro
-        high braccio_sinistro
-        pause 1 "second"
-        low braccio_sinistro
-    remove_label "ripetizione"
-
-add_label "serie" "green"
-countdown 3 "inizio tra"
-repeat 3 times counter s
-    set_label "serie" ("serie " + (s + 1) + "/3")
-    execute esercizio_braccia 5
-    countdown 5 "Riposo"
-remove_label "serie"`;
+var current_program_code = ``;
 var current_program_language: Language = "dullscript";
+
+{
+    const user_data = local_data.data().user_data;
+    const script = user_data.current_user_script;
+    if (script) {
+        current_program_code = script.code;
+        current_program_language = script.language;
+    }
+}
+
+function saveAs(blob: Blob, filename: string) {
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = URL.createObjectURL(blob);
+    a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':');
+    a.click();
+}
+
+const _save_timeout: number | null = null;
+const save_interval_ms = 1000;
+function tell_save_current_program_code_interval() {
+    if (_save_timeout) {
+        clearTimeout(_save_timeout);
+    }
+    setTimeout(() => {
+        local_data.data().user_data.current_user_script = {
+            code: current_program_code,
+            language: current_program_language
+        };
+        local_data.save();
+    }, save_interval_ms);
+}
 
 const darkTheme = createTheme({
     palette: {
@@ -200,9 +209,11 @@ function Sidebar(props: {
     setInverted: (inverted: boolean) => void
     openExamplesDlg: () => void;
     saveProgram: () => void;
+    loadProgram: () => void;
     onLoad: (setCode: (code: string) => void) => void;
     language: Language;
     setLanguage: (language: Language) => void;
+    default_code: string;
 }): JSX.Element {
 
     const [speed, setSpeed] = React.useState(1);
@@ -221,13 +232,14 @@ function Sidebar(props: {
                         height="98%"
                         language={props.language}
                         theme="vs-dark"
-                        value={current_program_code}
+                        value={props.default_code}
                         options={{
                             selectOnLineNumbers: true
                         }}
                         onChange={(value, event) => {
                             if (value) {
                                 current_program_code = value;
+                                tell_save_current_program_code_interval();
                             }
                         }}
                         onMount={(editor, monaco) => {
@@ -248,6 +260,9 @@ function Sidebar(props: {
                     <Button onClick={() => {
                         props.saveProgram();
                     }}>Save</Button>
+                    <Button onClick={() => {
+                        props.loadProgram();
+                    }}>Load</Button>
                     <Button onClick={() => {
                         props.openExamplesDlg();
                     }}>Examples</Button>
@@ -344,6 +359,10 @@ function Bottom(props: {
                 <option value={"1"}>1</option>
                 <option value={"2"}>2</option>
             </select>
+            <button onClick={() => {
+                local_data.reset();
+                window.location.reload();
+            }} >Reset all</button>
         </div>
     )
 }
@@ -463,77 +482,7 @@ namespace acquisition {
 }
 runner.set_canvas_updater(acquisition.update_canvas);
 
-namespace local_storage_settings {
-    export const KEY = "sequence-app-settings";
-    export interface Settings {
-        facingMode: SimplifiedFacingMode,
-        inverted: boolean,
-        model_complexity: 0 | 1 | 2,
-    };
-    var _settings: Settings = (() => {
-        let settings: Settings = {
-            facingMode: "user",
-            inverted: false,
-            model_complexity: 0
-        }
 
-        const settings_str = localStorage.getItem(KEY);
-        const settings_obj = settings_str && JSON.parse(settings_str);
-        if (settings_obj) {
-            if (settings_obj.facingMode !== undefined) {
-                settings.facingMode = settings_obj.facingMode;
-            }
-            if (settings_obj.inverted !== undefined) {
-                settings.inverted = settings_obj.inverted;
-            }
-            if (settings_obj.model_complexity !== undefined) {
-                settings.model_complexity = settings_obj.model_complexity;
-            }
-        }
-        return settings;
-    })();
-    export function settings() {
-        return _settings;
-    }
-    export function save() {
-        const settings_str = JSON.stringify(_settings);
-        localStorage.setItem(KEY, settings_str);
-    }
-}
-
-interface Patient {
-    id: string;
-    name: string;
-    scripts: Script[];
-}
-
-namespace local_data {
-    export const KEY = "sequence-app-data";
-    export interface Data {
-        patients: Patient[];
-    };
-    var _data: Data = (() => {
-        let data: Data = {
-            patients: []
-        }
-
-        const data_str = localStorage.getItem(KEY);
-        const data_obj = data_str && JSON.parse(data_str);
-        if (data_obj) {
-            if (data_obj.patients !== undefined) {
-                data.patients = data_obj.patients;
-            }
-        }
-        return data;
-    })();
-    export function data() {
-        return _data;
-    }
-    export function save() {
-        const data_str = JSON.stringify(_data);
-        localStorage.setItem(KEY, data_str);
-    }
-}
 
 function tmp_unused(..._args: any[]) {
 }
@@ -553,25 +502,25 @@ export function App(props: {
     const [set_code_f, set_set_code_f] = React.useState<SetCodeFunction | null>(null);
 
     // !!!
-    const [inverted, _setInverted] = React.useState(local_storage_settings.settings().inverted);
+    const [inverted, _setInverted] = React.useState(local_data.data().settings.inverted);
     const setInverted = (inverted: boolean) => {
         _setInverted(inverted);
-        local_storage_settings.settings().inverted = inverted;
-        local_storage_settings.save();
+        local_data.data().settings.inverted = inverted;
+        local_data.save();
     };
     set_x_tmp_inverted(inverted);
 
-    const [facingMode, _setFacingMode] = React.useState(local_storage_settings.settings().facingMode);
+    const [facingMode, _setFacingMode] = React.useState(local_data.data().settings.facingMode);
     const setFacingMode = (facingMode: SimplifiedFacingMode) => {
         _setFacingMode(facingMode);
-        local_storage_settings.settings().facingMode = facingMode;
-        local_storage_settings.save();
+        local_data.data().settings.facingMode = facingMode;
+        local_data.save();
     };
-    const [model_complexity, _setModelComplexity] = React.useState(local_storage_settings.settings().model_complexity);
+    const [model_complexity, _setModelComplexity] = React.useState(local_data.data().settings.model_complexity);
     const setModelComplexity = (model_complexity: 0 | 1 | 2) => {
         _setModelComplexity(model_complexity);
-        local_storage_settings.settings().model_complexity = model_complexity;
-        local_storage_settings.save();
+        local_data.data().settings.model_complexity = model_complexity;
+        local_data.save();
     };
 
     if (!acquisition.videoElement() || !acquisition.canvasElement()) {
@@ -597,6 +546,7 @@ export function App(props: {
     const [language, _setLanguage] = React.useState<Language>(current_program_language);
     const setLanguage = (language: Language) => {
         current_program_language = language;
+        tell_save_current_program_code_interval();
         _setLanguage(language);
     }
     const set_code = (code: string, language: Language) => {
@@ -608,6 +558,17 @@ export function App(props: {
     };
 
     const [examplesDlgOpen, setExamplesDlgOpen] = React.useState(false);
+
+    const [default_code, _set_default_code] = React.useState(current_program_code);
+    if (default_code.length === 0) {
+        const f = fetch(process.env.PUBLIC_URL + "/sequences/examples/full_example.ds");
+        f.then((response) => {
+            response.text().then((text) => {
+                _set_default_code(text);
+                setLanguage("dullscript");
+            });
+        });
+    }
 
     // stop acquisition when component unmounts
     useEffect(() => {
@@ -635,13 +596,41 @@ export function App(props: {
                     setInverted={setInverted}
                     openExamplesDlg={() => setExamplesDlgOpen(true)}
                     saveProgram={() => {
-                        alert("SAVE PROGRAM");
+                        const code = current_program_code;
+                        const language = current_program_language;
+                        const name = window.prompt("Enter a name for the program", "program");
+                        const ext = language_to_extension(language);
+                        const file_name = name + "." + ext;
+                        // open save dialog
+                        if (file_name) {
+                            const blob = new Blob([code], {type: "text/plain;charset=utf-8"});
+                            saveAs(blob, file_name);
+                        }
+                    }}
+                    loadProgram={() => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = ".ds,.dullscript,.js,.javascript";
+                        input.onchange = (event) => {
+                            const file = (event.target as HTMLInputElement).files?.[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                    const code = (event.target as FileReader).result as string;
+                                    const language = extension_to_language(file.name.split(".").pop() as string);
+                                    set_code(code, language);
+                                };
+                                reader.readAsText(file);
+                            }
+                        }
+                        input.click();
                     }}
                     onLoad={(_setCode) => {
                         set_set_code_f({setCode: _setCode});
                     }}
                     language={language}
                     setLanguage={setLanguage}
+                    default_code={default_code}
                 />
             </Split>
             <Bottom onCameraFacingModeChange={(mode) => {
