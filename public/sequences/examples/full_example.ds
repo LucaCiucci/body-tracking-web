@@ -15,10 +15,13 @@ routine esercizio_braccia N
         low braccio_sinistro
     remove_label "ripetizione"
 
+beep 0.5
 add_label "serie" "green"
 countdown 3 "inizio tra"
 repeat 3 times counter s
     set_label "serie" ("serie " + (s + 1) + "/3")
+    beep
+    pause 1
     execute esercizio_braccia 5
     countdown 5 "Riposo"
 remove_label "serie"
