@@ -42,7 +42,7 @@ import { draw, draw_data, set_x_tmp_inverted, x_tmp_inverted } from './drawing';
 import { local_data } from './data';
 import { SimplifiedFacingMode } from './types';
 
-const TMP_OK = false;
+const TMP_OK = true;
 
 var current_program_code = ``;
 var current_program_language: Language = "dullscript";
