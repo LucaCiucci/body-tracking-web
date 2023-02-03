@@ -18,6 +18,24 @@ export function string_to_language(str: string): Language {
     return 'dullscript';
 }
 
+export function language_to_extension(language: Language): string {
+    switch (language) {
+        case 'dullscript': return 'ds';
+        case 'javascript': return 'js';
+        case 'typescript': return 'ts';
+        default: return 'ds';
+    }
+}
+
+export function extension_to_language(extension: string): Language {
+    switch (extension) {
+        case 'ds': return 'dullscript';
+        case 'js': return 'javascript';
+        case 'ts': return 'typescript';
+        default: return 'dullscript';
+    }
+}
+
 export interface Script {
     code: string;
     language: Language;

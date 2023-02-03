@@ -37,7 +37,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 
 
-import { compile, Language, runner } from './scripting';
+import { compile, extension_to_language, Language, language_to_extension, runner } from './scripting';
 import { draw, draw_data, set_x_tmp_inverted, x_tmp_inverted } from './drawing';
 import { local_data } from './data';
 import { SimplifiedFacingMode } from './types';
@@ -54,6 +54,14 @@ var current_program_language: Language = "dullscript";
         current_program_code = script.code;
         current_program_language = script.language;
     }
+}
+
+function saveAs(blob: Blob, filename: string) {
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = URL.createObjectURL(blob);
+    a.dataset.downloadurl = ['text/plain', a.download, a.href].join(':');
+    a.click();
 }
 
 const _save_timeout: number | null = null;
@@ -201,6 +209,7 @@ function Sidebar(props: {
     setInverted: (inverted: boolean) => void
     openExamplesDlg: () => void;
     saveProgram: () => void;
+    loadProgram: () => void;
     onLoad: (setCode: (code: string) => void) => void;
     language: Language;
     setLanguage: (language: Language) => void;
@@ -251,6 +260,9 @@ function Sidebar(props: {
                     <Button onClick={() => {
                         props.saveProgram();
                     }}>Save</Button>
+                    <Button onClick={() => {
+                        props.loadProgram();
+                    }}>Load</Button>
                     <Button onClick={() => {
                         props.openExamplesDlg();
                     }}>Examples</Button>
@@ -584,7 +596,34 @@ export function App(props: {
                     setInverted={setInverted}
                     openExamplesDlg={() => setExamplesDlgOpen(true)}
                     saveProgram={() => {
-                        alert("SAVE PROGRAM");
+                        const code = current_program_code;
+                        const language = current_program_language;
+                        const name = window.prompt("Enter a name for the program", "program");
+                        const ext = language_to_extension(language);
+                        const file_name = name + "." + ext;
+                        // open save dialog
+                        if (file_name) {
+                            const blob = new Blob([code], {type: "text/plain;charset=utf-8"});
+                            saveAs(blob, file_name);
+                        }
+                    }}
+                    loadProgram={() => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = ".ds,.dullscript,.js,.javascript";
+                        input.onchange = (event) => {
+                            const file = (event.target as HTMLInputElement).files?.[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                    const code = (event.target as FileReader).result as string;
+                                    const language = extension_to_language(file.name.split(".").pop() as string);
+                                    set_code(code, language);
+                                };
+                                reader.readAsText(file);
+                            }
+                        }
+                        input.click();
                     }}
                     onLoad={(_setCode) => {
                         set_set_code_f({setCode: _setCode});
