@@ -9,7 +9,14 @@ import { parse_to_js } from './dullscript';
 
 import { beep as window_beep } from '../../beep';
 
-export type Language = 'javascript' | 'typescript' | 'dullscript';
+export type Language = 'dullscript' | 'javascript' | 'typescript';
+
+export function string_to_language(str: string): Language {
+    if (str === 'dullscript') { return 'dullscript'; }
+    if (str === 'javascript') { return 'javascript'; }
+    if (str === 'typescript') { return 'typescript'; }
+    return 'dullscript';
+}
 
 export interface Script {
     code: string;
@@ -224,7 +231,7 @@ export namespace runner {
             remove_label(name);
         };
         global["countdown"] = countdown;
-        const beep = (duration: number = 0.3, frequency: number = 432) => {
+        const beep = (duration: number = 0.3, frequency: number = 432 * 2) => {
             window_beep(duration, frequency);
         }
         global["beep"] = beep;

@@ -97,7 +97,7 @@ function tokenize(line: string): string[] {
         // increment
         "++", "--",
         // other
-        ".", ",", ";", "...", "=>"
+        /*".",*/ ",", ";", "...", "=>"
     ].sort((a, b) => b.length - a.length);
 
     function operator(src: string, pos: number): string {
