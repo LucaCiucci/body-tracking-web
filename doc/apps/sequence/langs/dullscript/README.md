@@ -39,7 +39,7 @@ For example, if you want to play a beep 1 second long, you can write:
 beep 1
 ```
 
-Some function might have required parameters, i.e. parameters that do not have a default value, for example the the `add_label` command has a required parameter `label_id` and an optional parameter `color`. So these two lines are both valid:
+Some functions might have required parameters, i.e. parameters that do not have a default value, for example the the `add_label` command has a required parameter `label_id` and an optional parameter `color`. So these two lines are both valid:
 
 ```dullscript
 add_label "my_label"
@@ -126,7 +126,7 @@ routine show_message message
     remove_label "my_label"
 ```
 
-Here, we have created a routine named `show_message` that accepts a parameter named `message`, and then it shows the message for 1 second. This might be useful, for example, if you want to define a routine that makes the to repeat an action different number of times, for example.
+Here, we have created a routine named `show_message` that accepts a parameter named `message`, and then it shows the message for 1 second. This might be useful, for example, if you want to define a routine that makes the patient to repeat an action a varying number of times, for example.
 
 ```dullscript
 routine some_exercise t
@@ -147,4 +147,4 @@ some_exercise 5
 
 ### A worked example
 
-You can see a worked example of a dullscript script [here](../../../../app/sequences/examples/full_example.ds)
+You can see a worked example of a dullscript script [here](https://github.com/LucaCiucci/body-tracking-web/blob/main/public/sequences/examples/full_example.ds)
