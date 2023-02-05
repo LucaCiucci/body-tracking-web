@@ -14,4 +14,4 @@ Each page has a dedicated documentation:
 
 ## Development
 
-See the project [README](https://google.github.io/mediapipe/) and [CONTRIBUTING](https://github.com/LucaCiucci/body-tracking-web/blob/main/CONTRIBUTING.md) for more details.
+See the project [README](https://github.com/LucaCiucci/body-tracking-web) and [CONTRIBUTING](https://github.com/LucaCiucci/body-tracking-web/blob/main/CONTRIBUTING.md) for more details.
