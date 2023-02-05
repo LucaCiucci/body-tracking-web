@@ -14,25 +14,4 @@ Each page has a dedicated documentation:
 
 ## Development
 
-TODO ...
-
-### Setup
-
-Install dependencies with:
-```sh
-npm install
-```
-
-### Run
-
-Run the app with:
-```sh
-npm start
-```
-
-### Build
-
-Build the app with:
-```sh
-npm run build
-```
+See the project [README](https://google.github.io/mediapipe/) and [CONTRIBUTING](https://github.com/LucaCiucci/body-tracking-web/blob/main/CONTRIBUTING.md) for more details.
