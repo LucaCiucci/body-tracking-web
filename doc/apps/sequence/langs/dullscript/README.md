@@ -88,7 +88,7 @@ repeat 10 i
     pause 1
 ```
 
-In this example, the `repeat` command will execute the block of code 10 times, and each time it will set the variable `i` to the current iteration number, if you don't need the iteration number, you can omit it and just write `repeat 10` instead.
+In this example, the `repeat` command will execute the block of code 10 times, and each time it will set the variable `i` to the current iteration number, if you don't need the iteration number, you can omit it and just write `repeat 10` instead. The block of code to repeat is indented by 4 spaces.
 
 You can also use the `for` statement that does the same thing in a more "programmer-friendly" way, for example:
 

@@ -62,7 +62,7 @@ remove_label("serie");
 
 
 const BASIC_KEYWORDS = [
-    "def", "routine", "call", "do", "execute", "run", "repeat", "times", "counter"
+    "def", "routine", "call", "do", "execute", "run", "repeat", "for", "from", "to"
 ];
 
 const KEYWORDS = (() => {

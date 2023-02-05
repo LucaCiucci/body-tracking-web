@@ -249,22 +249,40 @@ export function to_js(statements: RawStatement[]): string {
 
         // repeat
         if (tokens[0] === "repeat") {
-            if (tokens.length < 5) {
+            if (tokens.length < 2) {
                 throw new Error(`Invalid repeat statement, expected at least ${2} tokens but got ${tokens.length}`);
             }
-            let count = tokens[1];
-            if (tokens[2] !== "times") {
-                throw new Error(`Invalid repeat statement, expected ${"times"} but got ${tokens[2]}`);
+            if (tokens.length > 3) {
+                throw new Error(`Invalid repeat statement, expected at most ${3} tokens but got ${tokens.length}`);
             }
-            if (tokens[3] !== "counter") {
-                throw new Error(`Invalid repeat statement, expected ${"counter"} but got ${tokens[3]}`);
-            }
-            let name = tokens[4];
+            const count = tokens[1];
+            const name = tokens[2] || "i";
             code += `for (let ${name} = 0; ${name} < ${count}; ${name}++) {`;
             code += to_js(statement.body);
             code += "};";
             continue;
         }
+
+        // for loop
+        if (tokens[0] === "for") {
+            if (tokens.length !== 6) {
+                throw new Error(`Invalid for loop, expected ${6} tokens but got ${tokens.length}: ${tokens}`);
+            }
+            const name = tokens[1];
+            if (tokens[2] !== "from") {
+                throw new Error(`Invalid for loop, expected "from" but got ${tokens[2]}`);
+            }
+            const start = tokens[3];
+            if (tokens[4] !== "to") {
+                throw new Error(`Invalid for loop, expected "to" but got ${tokens[4]}`);
+            }
+            const end = tokens[5];
+            code += `for (let ${name} = ${start}; ${name} < ${end}; ${name}++) {`;
+            code += to_js(statement.body);
+            code += "};";
+            continue;
+        }
+
 
         const function_call = (tokens: string[]): string => {
             if (tokens.length < 1) {
