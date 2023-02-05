@@ -214,8 +214,8 @@ export namespace runner {
 
         const pause = _impl_pause;
         global["pause"] = pause;
-        const high = (connection: [number, number][]) => {
-            drawing.highlight_connections(connection);
+        const high = (connection: [number, number][], color: string = "red") => {
+            drawing.highlight_connections(connection, color);
             update_drawing();
         };
         global["high"] = high;

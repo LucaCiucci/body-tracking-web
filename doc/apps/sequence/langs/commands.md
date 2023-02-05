@@ -55,6 +55,7 @@ This command highlights the given keypoints, it can be used to notify the patien
 
 #### Parameters
  - `keypoints`: the keypoints to highlight, can be a single keypoint or a list of (keypoints or segments (array of two keypoints))
+ - `color`: the color of the highlight, defaults to `"red"`
 
 #### Examples
 TODO

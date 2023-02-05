@@ -1,5 +1,5 @@
 
-import { Results as PoseResults } from '@mediapipe/pose';
+import { POSE_CONNECTIONS, Results as PoseResults } from '@mediapipe/pose';
 import { NormalizedLandmarkList } from '@mediapipe/drawing_utils';
 
 export var draw_data: {
@@ -107,13 +107,26 @@ export function draw(canvasElement: HTMLCanvasElement, videoElement: HTMLVideoEl
         }
 
         if (draw_data.draw_pose) {
-            ctx.fillStyle = "green";
+            //drawConnectors(ctx, landmarks, POSE_CONNECTIONS, { color: "#7F00FF00", lineWidth: 4 });
+            for (let conn of POSE_CONNECTIONS) {
+                const from = landmarks[conn[0]];
+                const to = landmarks[conn[1]];
+                let [x1, y1] = video_to_canvas_coordinates([from.x, from.y]);
+                let [x2, y2] = video_to_canvas_coordinates([to.x, to.y]);
+                ctx.strokeStyle = "#00FF007F";
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            /*ctx.fillStyle = "blue";
             for (let landmark of landmarks) {
                 let [x, y] = video_to_canvas_coordinates([landmark.x, landmark.y]);
                 ctx.beginPath();
                 ctx.arc(x, y, 5, 0, 2 * Math.PI);
                 ctx.fill();
-            }
+            }*/
         }
 
         for (let connection of draw_data.highlightedConnections) {
@@ -131,17 +144,17 @@ export function draw(canvasElement: HTMLCanvasElement, videoElement: HTMLVideoEl
     }
 }
 
-export function highlight_connection(connection: [number, number]) {
+export function highlight_connection(connection: [number, number], color: string) {
     draw_data.highlightedConnections.push({
         from: connection[0],
         to: connection[1],
-        color: "red",
+        color,
     });
 }
 
-export function highlight_connections(connection: [number, number][]) {
+export function highlight_connections(connection: [number, number][], color: string) {
     for (let c of connection) {
-        highlight_connection(c);
+        highlight_connection(c, color);
     }
 }
 
