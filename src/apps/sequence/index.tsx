@@ -41,11 +41,15 @@ import { compile, extension_to_language, Language, language_to_extension, runner
 import { draw, draw_data, set_x_tmp_inverted, x_tmp_inverted } from './drawing';
 import { local_data } from './data';
 import { SimplifiedFacingMode } from './types';
+import { beep } from '../../beep';
 
 const TMP_OK = true;
 
 var current_program_code = ``;
 var current_program_language: Language = "dullscript";
+
+var datas: Array<Object> = [];
+var last_save_time = 0;
 
 {
     const user_data = local_data.data().user_data;
@@ -446,6 +450,16 @@ namespace acquisition {
             tellStarted();
             transformResults(results);
             draw_data.pose = results;
+            let save_time = Date.now() / 1000;
+            if (save_time - last_save_time > 1) {
+                last_save_time = save_time;
+                let save_data = {
+                    time_seconds: save_time,
+                    pose: results.poseLandmarks,
+                }
+                datas.push(save_data);
+                beep(0.1, 1000, 0.1);
+            }
             update_canvas();
         });
     
@@ -581,6 +595,15 @@ export function App(props: {
     return (
         <ThemeProvider theme={darkTheme}>
         <Stack height="100%" className="sequence-app">
+            <Button onClick={() => {
+                let json = JSON.stringify(datas);
+                let blob = new Blob([json], {type: "application/json"});
+                let url = URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.download = "data.json";
+                a.href = url;
+                a.click();
+            }}>Save</Button>
             <Header title="Sequence" />
             <Split className="main-content" gutterSize={5} minSize={[300, 300]} onDrag={() => {
                 acquisition.update_canvas();
