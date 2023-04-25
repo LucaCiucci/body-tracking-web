@@ -3,7 +3,7 @@
 
 ## Web App
 
-You can access the web app [here](https://lucaciucci.github.io/body-tracking-web/app/).
+You can access the web app [here](https://bbf-project.github.io/body-tracking-web/app/).
 
 ## Documentation
 
@@ -14,4 +14,4 @@ Each page has a dedicated documentation:
 
 ## Development
 
-See the project [README](https://github.com/LucaCiucci/body-tracking-web) and [CONTRIBUTING](https://github.com/LucaCiucci/body-tracking-web/blob/main/CONTRIBUTING.md) for more details.
+See the project [README](https://github.com/bbf-project/body-tracking-web/) and [CONTRIBUTING](https://github.com/bbf-project/body-tracking-web/blob/main/CONTRIBUTING.md) for more details.
