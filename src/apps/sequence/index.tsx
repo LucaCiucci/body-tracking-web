@@ -36,20 +36,19 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 
+import ciao from "./ciao.png"
+
 
 import { compile, extension_to_language, Language, language_to_extension, runner } from './scripting';
-import { draw, draw_data, set_x_tmp_inverted, x_tmp_inverted } from './drawing';
+import { calcola_angoli, draw, draw_data, set_x_tmp_inverted, x_tmp_inverted } from './drawing';
 import { local_data } from './data';
 import { SimplifiedFacingMode } from './types';
-import { beep } from '../../beep';
 
 const TMP_OK = true;
 
 var current_program_code = ``;
 var current_program_language: Language = "dullscript";
 
-var datas: Array<Object> = [];
-var last_save_time = 0;
 
 {
     const user_data = local_data.data().user_data;
@@ -136,7 +135,9 @@ function Display(props:{
     loading: boolean,
     videoElement?: HTMLVideoElement,
     canvasElement?: HTMLCanvasElement,
-    inverted: boolean
+    inverted: boolean,
+    set_valore_angolo_spalle: (valore_angolo_spalle: number) => void,
+    set_valore_angolo_collo: (valore_angolo_gomiti: number) => void,
 }): JSX.Element {
 
     if (props.canvasElement && props.videoElement) {
@@ -375,6 +376,16 @@ namespace acquisition {
     var _camera: Camera | null = null;
     var _canvasElement: HTMLCanvasElement | null = null;
     var _videoElement: HTMLVideoElement | null = null;
+    var set_valore_angolo_spalle: (valore_angolo_spalle: number) => void = () => { };
+    var set_valore_angolo_collo: (valore_angolo_gomiti: number) => void = () => { };
+
+    export function set_set_valore_angolo_spalle(set_valore_angolo_spalle_: (valore_angolo_spalle: number) => void) {
+        set_valore_angolo_spalle = set_valore_angolo_spalle_;
+    }
+
+    export function set_set_valore_angolo_collo(set_valore_angolo_collo_: (valore_angolo_collo: number) => void) {
+        set_valore_angolo_collo = set_valore_angolo_collo_;
+    }
 
     export function camera() {
         return _camera;
@@ -450,16 +461,6 @@ namespace acquisition {
             tellStarted();
             transformResults(results);
             draw_data.pose = results;
-            let save_time = Date.now() / 1000;
-            if (save_time - last_save_time > 1) {
-                last_save_time = save_time;
-                let save_data = {
-                    time_seconds: save_time,
-                    pose: results.poseLandmarks,
-                }
-                datas.push(save_data);
-                beep(0.1, 1000, 0.1);
-            }
             update_canvas();
         });
     
@@ -491,6 +492,10 @@ namespace acquisition {
         const video = videoElement();
         if (canvas && video) {
             draw(canvas, video);
+            let angoli = calcola_angoli();
+            set_valore_angolo_spalle(angoli.spalle / 15);
+            set_valore_angolo_collo(angoli.collo / 10);
+            console.log(angoli);
         }
     }
 }
@@ -502,6 +507,48 @@ function tmp_unused(..._args: any[]) {
 }
 
 tmp_unused(local_data.KEY);
+
+function LinearGauge(props: {
+    value: number, // -1 to 1
+    label: string,
+}): JSX.Element {
+
+    return (
+        <div style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "0.5em",
+            margin: "0.5em",
+        }}>
+            {/*label*/}
+            <div style={{width: "5em"}}>{props.label}</div>
+            <div style={{
+                // gradient where green is the center at 0 and red is at -1 and +1
+                // violet-red-orange-yello-green-yellow-orange-red-violet
+                background: "linear-gradient(90deg, #8B008B, #FF0000, #FFA500, #FFFF00, #008000, #FFFF00, #FFA500, #FF0000, #8B008B)",
+                height: "30px",
+                borderRadius: "5px",
+                border: "1px solid gray",
+                flexGrow: 1,
+            }}>
+                {/*cursor*/}
+                <div style={{
+                    width: "0.5em",
+                    height: "140%",
+                    borderRadius: "0.25em",
+                    background: "none",
+                    transform: `translateY(-15%)`,
+                    borderTop: "5px solid white",
+                    borderBottom: "5px solid white",
+                    borderLeft: "2px solid black",
+                    borderRight: "2px solid black",
+                    marginLeft: `${(props.value + 1) * 50}%`,
+                }}></div>
+                {/* transform: `translateX(${(props.value + 1) * 50}%)`, */}
+            </div>
+        </div>
+    );
+}
 
 export function App(props: {
 }): JSX.Element {
@@ -592,19 +639,18 @@ export function App(props: {
         }
     }, []);
 
+    let angoli = calcola_angoli();
+
+    let [valore_angolo_spalle, set_valore_angolo_spalle] = React.useState(0);
+    let [valore_angolo_collo, set_valore_angolo_collo] = React.useState(0);
+
+    acquisition.set_set_valore_angolo_spalle(set_valore_angolo_spalle);
+    acquisition.set_set_valore_angolo_collo(set_valore_angolo_collo);
+
     return (
         <ThemeProvider theme={darkTheme}>
         <Stack height="100%" className="sequence-app">
-            <Button onClick={() => {
-                let json = JSON.stringify(datas);
-                let blob = new Blob([json], {type: "application/json"});
-                let url = URL.createObjectURL(blob);
-                let a = document.createElement('a');
-                a.download = "data.json";
-                a.href = url;
-                a.click();
-            }}>Save</Button>
-            <Header title="Sequence" />
+            <Header title="VDU posture monitor" />
             <Split className="main-content" gutterSize={5} minSize={[300, 300]} onDrag={() => {
                 acquisition.update_canvas();
             }}>
@@ -613,48 +659,24 @@ export function App(props: {
                     canvasElement={canvasElement}
                     loading={loading}
                     inverted={inverted}
+                    set_valore_angolo_spalle={set_valore_angolo_spalle}
+                    set_valore_angolo_collo={set_valore_angolo_collo}
                 />
-                <Sidebar
-                    inverted={inverted}
-                    setInverted={setInverted}
-                    openExamplesDlg={() => setExamplesDlgOpen(true)}
-                    saveProgram={() => {
-                        const code = current_program_code;
-                        const language = current_program_language;
-                        const name = window.prompt("Enter a name for the program", "program");
-                        const ext = language_to_extension(language);
-                        const file_name = name + "." + ext;
-                        // open save dialog
-                        if (file_name) {
-                            const blob = new Blob([code], {type: "text/plain;charset=utf-8"});
-                            saveAs(blob, file_name);
-                        }
-                    }}
-                    loadProgram={() => {
-                        const input = document.createElement("input");
-                        input.type = "file";
-                        input.accept = ".ds,.dullscript,.js,.javascript";
-                        input.onchange = (event) => {
-                            const file = (event.target as HTMLInputElement).files?.[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onload = (event) => {
-                                    const code = (event.target as FileReader).result as string;
-                                    const language = extension_to_language(file.name.split(".").pop() as string);
-                                    set_code(code, language);
-                                };
-                                reader.readAsText(file);
-                            }
-                        }
-                        input.click();
-                    }}
-                    onLoad={(_setCode) => {
-                        set_set_code_f({setCode: _setCode});
-                    }}
-                    language={language}
-                    setLanguage={setLanguage}
-                    default_code={default_code}
-                />
+                <Split className="sidebar" gutterSize={5} minSize={[100, 100]} direction="vertical">
+                    <div>
+                        {/*<div style={{fontSize: "150%", textAlign: "center"}}>Andamento postura</div>*/}
+                        <img
+                            src={ciao}
+                            alt="MANCANTE"
+                            // full width, vertically centered
+                            style={{display: "block", width: "100%", height: "100%", objectFit: "contain"}}
+                        />
+                    </div>
+                    <div>
+                        <LinearGauge value={valore_angolo_collo} label='Collo' />
+                        <LinearGauge value={valore_angolo_spalle} label='Spalle' />
+                    </div>
+                </Split>
             </Split>
             <Bottom onCameraFacingModeChange={(mode) => {
                 setFacingMode(mode);

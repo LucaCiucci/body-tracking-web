@@ -1,5 +1,5 @@
 
-import { POSE_CONNECTIONS, Results as PoseResults } from '@mediapipe/pose';
+import { POSE_CONNECTIONS, Results as PoseResults, POSE_LANDMARKS } from '@mediapipe/pose';
 import { NormalizedLandmarkList } from '@mediapipe/drawing_utils';
 
 export var draw_data: {
@@ -25,6 +25,55 @@ export var draw_data: {
 export var x_tmp_inverted: boolean = false;
 export function set_x_tmp_inverted(value: boolean) {
     x_tmp_inverted = value;
+}
+
+interface Angoli {
+    spalle: number;
+    collo: number;
+}
+
+export function calcola_angoli(
+): Angoli {
+    let pose = draw_data.pose;
+
+    if (!pose) {
+        return {
+            spalle: 0,
+            collo: 0,
+        };
+    }
+
+    let landmarks = pose.poseLandmarks as (NormalizedLandmarkList | undefined);
+
+    if (!landmarks) {
+        return {
+            spalle: 0,
+            collo: 0,
+        };
+    }
+
+    let left_shoulder = landmarks[POSE_LANDMARKS.LEFT_SHOULDER];
+    let right_shoulder = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
+function calcAngleDegrees(x: number, y: number) {
+  return Math.atan2(y, x) * 180 / Math.PI;
+}
+    let shoulder_angle = calcAngleDegrees(
+        left_shoulder.x - right_shoulder.x,
+        left_shoulder.y - right_shoulder.y,
+    );
+
+    let left_eye = landmarks[POSE_LANDMARKS.LEFT_EYE];
+    let right_eye = landmarks[POSE_LANDMARKS.RIGHT_EYE];
+
+    let eye_angle = calcAngleDegrees(
+        left_eye.x - right_eye.x,
+        left_eye.y - right_eye.y,
+    );
+
+    return {
+        spalle: shoulder_angle,
+        collo: eye_angle,
+    };
 }
 
 export function reset_draw_data() {
@@ -127,6 +176,44 @@ export function draw(canvasElement: HTMLCanvasElement, videoElement: HTMLVideoEl
                 ctx.arc(x, y, 5, 0, 2 * Math.PI);
                 ctx.fill();
             }*/
+
+            let left_shoulder = landmarks[POSE_LANDMARKS.LEFT_SHOULDER];
+            let right_shoulder = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
+            let left_eye = landmarks[POSE_LANDMARKS.LEFT_EYE];
+            let right_eye = landmarks[POSE_LANDMARKS.RIGHT_EYE];
+
+            let angles = calcola_angoli();
+            let shoulder_angle = angles.spalle;
+            let eye_angle = angles.collo;
+            
+            // draw the shoulder angle from of the left shoulder
+            let [x1, y1] = video_to_canvas_coordinates([left_shoulder.x, left_shoulder.y]);
+            let [x2, y2] = video_to_canvas_coordinates([right_shoulder.x, right_shoulder.y]);
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            let midpoint = [(x1 + x2) / 2, (y1 + y2) / 2];
+            ctx.lineTo(midpoint[0], midpoint[1]);
+            ctx.lineTo(midpoint[0], y1);
+            ctx.fill();
+
+            // draw the shoulder angle from of the right shoulder
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(midpoint[0], midpoint[1]);
+            ctx.lineTo(midpoint[0], y2);
+            ctx.fill();
+
+            // draw neck angle from midpoint to the midpoint of the eyes
+            let [xa, ya] = midpoint;
+            let [xb, yb] = video_to_canvas_coordinates([(left_eye.x + right_eye.x) / 2, (left_eye.y + right_eye.y) / 2]);
+
+            ctx.beginPath();
+            ctx.moveTo(xa, ya);
+            ctx.lineTo(xb, yb);
+            ctx.lineTo(xa, yb);
+            ctx.fill();
         }
 
         for (let connection of draw_data.highlightedConnections) {
