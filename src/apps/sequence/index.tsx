@@ -23,7 +23,7 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { NormalizedLandmarkList } from '@mediapipe/drawing_utils';
+import { NormalizedLandmarkList, clamp } from '@mediapipe/drawing_utils';
 import Checkbox from '@mui/material/Checkbox';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
@@ -493,9 +493,8 @@ namespace acquisition {
         if (canvas && video) {
             draw(canvas, video);
             let angoli = calcola_angoli();
-            set_valore_angolo_spalle(angoli.spalle / 15);
-            set_valore_angolo_collo(angoli.collo / 10);
-            console.log(angoli);
+            set_valore_angolo_spalle(angoli.spalle / 10);
+            set_valore_angolo_collo(angoli.collo / 15);
         }
     }
 }
@@ -512,6 +511,7 @@ function LinearGauge(props: {
     value: number, // -1 to 1
     label: string,
 }): JSX.Element {
+    let value = clamp(props.value, -1, 1);
 
     return (
         <div style={{
@@ -542,7 +542,7 @@ function LinearGauge(props: {
                     borderBottom: "5px solid white",
                     borderLeft: "2px solid black",
                     borderRight: "2px solid black",
-                    marginLeft: `${(props.value + 1) * 50}%`,
+                    marginLeft: `${(value + 1) * 50}%`,
                 }}></div>
                 {/* transform: `translateX(${(props.value + 1) * 50}%)`, */}
             </div>
@@ -563,7 +563,7 @@ export function App(props: {
     const [set_code_f, set_set_code_f] = React.useState<SetCodeFunction | null>(null);
 
     // !!!
-    const [inverted, _setInverted] = React.useState(local_data.data().settings.inverted);
+    const [inverted, _setInverted] = React.useState(true);
     const setInverted = (inverted: boolean) => {
         _setInverted(inverted);
         local_data.data().settings.inverted = inverted;

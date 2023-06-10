@@ -32,6 +32,72 @@ interface Angoli {
     collo: number;
 }
 
+interface Val {
+    position: number,
+    color: [number, number, number],
+};
+
+function linear_gradient_interpolate(values: Val[], v: number): [number, number, number]  {
+    if (values.length === 0) {
+        return [0, 0, 0];
+    }
+
+    if (v <= values[0].position) {
+        return values[0].color;
+    }
+
+    if (v >= values[values.length - 1].position) {
+        return values[values.length - 1].color;
+    }
+
+    for (let i = 0; i < values.length - 1; i++) {
+        let a = values[i];
+        let b = values[i + 1];
+        if (a.position <= v && v <= b.position) {
+            let t = (v - a.position) / (b.position - a.position);
+            return [
+                a.color[0] * (1 - t) + b.color[0] * t,
+                a.color[1] * (1 - t) + b.color[1] * t,
+                a.color[2] * (1 - t) + b.color[2] * t,
+            ];
+        }
+    }
+
+    return [0, 0, 0];
+}
+
+function to_css_color(rgb: [number, number, number]): string {
+    let r = "rgb(";
+    r += Math.round(rgb[0]).toString() + ", ";
+    r += Math.round(rgb[1]).toString() + ", ";
+    r += Math.round(rgb[2]).toString() + ")";
+    return r;
+}
+
+function neck_color(v: number): string {
+    let values: Val[] = [
+        {
+            position: 0,
+            color: [0, 255, 0]
+        },
+        {
+            position: 5,
+            color: [255, 255, 0]
+        },
+        {
+            position: 10,
+            color: [255, 0, 0]
+        },
+        {
+            position: 15,
+            color: [139, 0, 139]
+        },
+    ];
+    let rgb = linear_gradient_interpolate(values, v);
+
+    return to_css_color(rgb);
+}
+
 export function calcola_angoli(
 ): Angoli {
     let pose = draw_data.pose;
@@ -58,7 +124,7 @@ function calcAngleDegrees(x: number, y: number) {
   return Math.atan2(y, x) * 180 / Math.PI;
 }
     let shoulder_angle = calcAngleDegrees(
-        left_shoulder.x - right_shoulder.x,
+        -left_shoulder.x - -right_shoulder.x,
         left_shoulder.y - right_shoulder.y,
     );
 
@@ -66,7 +132,7 @@ function calcAngleDegrees(x: number, y: number) {
     let right_eye = landmarks[POSE_LANDMARKS.RIGHT_EYE];
 
     let eye_angle = calcAngleDegrees(
-        left_eye.x - right_eye.x,
+        -left_eye.x - -right_eye.x,
         left_eye.y - right_eye.y,
     );
 
@@ -156,13 +222,26 @@ export function draw(canvasElement: HTMLCanvasElement, videoElement: HTMLVideoEl
         }
 
         if (draw_data.draw_pose) {
+            let angles = calcola_angoli();
+            let shoulder_angle = angles.spalle;
+            let eye_angle = angles.collo;
+
+            let worst = (() => {
+                let a = Math.abs(angles.spalle * 3 / 2);
+                let b = Math.abs(angles.collo);
+                return (a > b) ? a : b;
+            })();
+            let worst_color = neck_color(worst);
+
             //drawConnectors(ctx, landmarks, POSE_CONNECTIONS, { color: "#7F00FF00", lineWidth: 4 });
             for (let conn of POSE_CONNECTIONS) {
                 const from = landmarks[conn[0]];
                 const to = landmarks[conn[1]];
                 let [x1, y1] = video_to_canvas_coordinates([from.x, from.y]);
                 let [x2, y2] = video_to_canvas_coordinates([to.x, to.y]);
-                ctx.strokeStyle = "#00FF007F";
+                //ctx.strokeStyle = "#00FF007F";
+                ctx.strokeStyle = "gray";
+                ctx.strokeStyle = worst_color;
                 ctx.lineWidth = 4;
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
@@ -181,15 +260,12 @@ export function draw(canvasElement: HTMLCanvasElement, videoElement: HTMLVideoEl
             let right_shoulder = landmarks[POSE_LANDMARKS.RIGHT_SHOULDER];
             let left_eye = landmarks[POSE_LANDMARKS.LEFT_EYE];
             let right_eye = landmarks[POSE_LANDMARKS.RIGHT_EYE];
-
-            let angles = calcola_angoli();
-            let shoulder_angle = angles.spalle;
-            let eye_angle = angles.collo;
             
             // draw the shoulder angle from of the left shoulder
             let [x1, y1] = video_to_canvas_coordinates([left_shoulder.x, left_shoulder.y]);
             let [x2, y2] = video_to_canvas_coordinates([right_shoulder.x, right_shoulder.y]);
-            ctx.strokeStyle = "red";
+            //ctx.strokeStyle = "red";
+            ctx.fillStyle = neck_color(Math.abs(angles.spalle * 3 / 2));
             ctx.lineWidth = 5;
             ctx.beginPath();
             ctx.moveTo(x1, y1);
@@ -207,13 +283,17 @@ export function draw(canvasElement: HTMLCanvasElement, videoElement: HTMLVideoEl
 
             // draw neck angle from midpoint to the midpoint of the eyes
             let [xa, ya] = midpoint;
+            ctx.fillText(Math.round(angles.spalle).toString() + "°", xa + 50, ya - 10);
             let [xb, yb] = video_to_canvas_coordinates([(left_eye.x + right_eye.x) / 2, (left_eye.y + right_eye.y) / 2]);
 
+            ctx.fillStyle = neck_color(Math.abs(angles.collo));
             ctx.beginPath();
             ctx.moveTo(xa, ya);
             ctx.lineTo(xb, yb);
             ctx.lineTo(xa, yb);
             ctx.fill();
+
+            ctx.fillText(Math.round(angles.collo).toString() + "°", xb + 0, yb);
         }
 
         for (let connection of draw_data.highlightedConnections) {
